@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="bn" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blood Donor Search</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Hind Siliguri', sans-serif; }
+    .tab-active { background: #dc2626; color: white; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(220,38,38,0.15); }
+    .pulse-dot { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{ opacity:1; } 50%{ opacity:0.5; } }
+  </style>
+  <style>body { box-sizing: border-box; }</style>
+ </head>
+ <body class="h-full">
+  <div id="app" class="h-full w-full bg-gray-50 overflow-auto">
+   <!-- Header -->
+   <header class="bg-gradient-to-r from-red-700 to-red-900 text-white py-8 px-4 text-center relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10" style="background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 80 80%22><text y=%2250%22 font-size=%2240%22>🩸</text></svg>'); background-size: 60px;"></div>
+    <div class="relative z-10">
+     <div class="flex items-center justify-center gap-3 mb-2">
+      <span class="text-4xl">🩸</span>
+      <h1 id="site-title" class="text-3xl md:text-4xl font-bold">Blood Donor Search</h1>
+     </div>
+     <p id="tagline" class="text-red-200 text-lg">জীবন বাঁচান, রক্ত দিন</p>
+    </div>
+   </header><!-- Stats -->
+   <div class="max-w-4xl mx-auto -mt-6 px-4 relative z-20">
+    <div class="bg-white rounded-xl shadow-lg p-4 flex justify-around">
+     <div class="text-center">
+      <p id="donor-count" class="text-3xl font-bold text-red-600">0</p>
+      <p class="text-gray-500 text-sm">মোট ডোনার</p>
+     </div>
+     <div class="w-px bg-gray-200"></div>
+     <div class="text-center">
+      <p id="helped-count" class="text-3xl font-bold text-green-600">0</p>
+      <p class="text-gray-500 text-sm">সহায়তা পেয়েছে</p>
+     </div>
+    </div>
+   </div><!-- Tabs -->
+   <div class="max-w-4xl mx-auto px-4 mt-6">
+    <div class="flex rounded-lg overflow-hidden border border-gray-200">
+     <button onclick="switchTab('search')" id="tab-search" class="flex-1 py-3 px-4 font-semibold text-center transition tab-active">🔍 রক্ত খুঁজুন</button> <button onclick="switchTab('register')" id="tab-register" class="flex-1 py-3 px-4 font-semibold text-center transition bg-white text-gray-600 hover:bg-gray-50">📝 ডোনার রেজিস্ট্রেশন</button>
+    </div>
+   </div><!-- Search Panel -->
+   <div id="panel-search" class="max-w-4xl mx-auto px-4 mt-6 pb-8">
+    <div class="bg-white rounded-xl shadow p-6">
+     <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-bold text-gray-800">রক্তদাতা খুঁজুন</h2><button onclick="useDeviceLocation()" id="location-btn" class="text-sm bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-medium hover:bg-blue-100 transition">📍 আমার এলাকা</button>
+     </div>
+     <div id="location-status" class="mb-4 hidden bg-blue-50 text-blue-700 p-3 rounded-lg text-sm"></div>
+     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+       <label class="block text-sm font-medium text-gray-700 mb-1" for="search-blood">ব্লাড গ্রুপ</label> <select id="search-blood" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none"> <option value="">সব গ্রুপ</option> <option>A+</option><option>A-</option><option>B+</option><option>B-</option> <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option> </select>
+      </div>
+      <div>
+       <label class="block text-sm font-medium text-gray-700 mb-1" for="search-district">জেলা</label> <select id="search-district" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none"> <option value="">সব জেলা</option> </select>
+      </div>
+      <div>
+       <label class="block text-sm font-medium text-gray-700 mb-1" for="search-thana">থানা</label> <select id="search-thana" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none"> <option value="">সব থানা</option> </select>
+      </div>
+     </div><button onclick="searchDonors()" class="mt-4 w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition"> 🔍 খুঁজুন </button>
+    </div><!-- Results -->
+    <div id="search-results" class="mt-6 space-y-4"></div>
+   </div><!-- Register Panel -->
+   <div id="panel-register" class="max-w-4xl mx-auto px-4 mt-6 pb-8 hidden">
+    <div class="bg-white rounded-xl shadow p-6">
+     <h2 class="text-xl font-bold text-gray-800 mb-4">ডোনার রেজিস্ট্রেশন</h2>
+     <form id="reg-form" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-name">নাম *</label> <input id="reg-name" required type="text" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+       </div>
+       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-blood">ব্লাড গ্রুপ *</label> <select id="reg-blood" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none"> <option value="">নির্বাচন করুন</option> <option>A+</option><option>A-</option><option>B+</option><option>B-</option> <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option> </select>
+       </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-country">দেশ</label> <input id="reg-country" type="text" value="বাংলাদেশ" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+       </div>
+       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-division">বিভাগ</label> <input id="reg-division" type="text" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+       </div>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-district">জেলা *</label> <input id="reg-district" required type="text" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+       </div>
+       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-thana">থানা</label> <input id="reg-thana" type="text" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+       </div>
+      </div>
+      <div>
+       <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-union">ইউনিয়ন</label> <input id="reg-union" type="text" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-phone">ফোন *</label> <input id="reg-phone" required type="tel" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+       </div>
+       <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-email">ইমেইল</label> <input id="reg-email" type="email" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+       </div>
+      </div>
+      <div>
+       <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-facebook">ফেসবুক প্রোফাইল লিংক</label> <input id="reg-facebook" type="url" placeholder="https://facebook.com/..." class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+      </div><button type="submit" id="reg-btn" class="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 rounded-lg transition"> রেজিস্ট্রেশন করুন </button>
+      <div id="reg-msg" class="text-center hidden"></div>
+     </form>
+    </div>
+   </div>
+  </div>
+  <script>
+  let allDonors = [];
+
+  // Tabs
+  function switchTab(tab) {
+    document.getElementById('panel-search').classList.toggle('hidden', tab !== 'search');
+    document.getElementById('panel-register').classList.toggle('hidden', tab !== 'register');
+    document.getElementById('tab-search').className = tab === 'search' ? 'flex-1 py-3 px-4 font-semibold text-center transition tab-active' : 'flex-1 py-3 px-4 font-semibold text-center transition bg-white text-gray-600 hover:bg-gray-50';
+    document.getElementById('tab-register').className = tab === 'register' ? 'flex-1 py-3 px-4 font-semibold text-center transition tab-active' : 'flex-1 py-3 px-4 font-semibold text-center transition bg-white text-gray-600 hover:bg-gray-50';
+  }
+
+  // আপডেট করুন জেলা ও থানা ড্রপডাউন
+  function updateLocationDropdowns() {
+    const districts = [...new Set(allDonors.map(d => d.district).filter(Boolean))].sort();
+    const districtSelect = document.getElementById('search-district');
+    const currentDistrict = districtSelect.value;
+    
+    districtSelect.innerHTML = '<option value="">সব জেলা</option>';
+    districts.forEach(d => {
+      const opt = document.createElement('option');
+      opt.value = d;
+      opt.textContent = d;
+      districtSelect.appendChild(opt);
+    });
+    districtSelect.value = currentDistrict;
+    updateThanaDropdown();
+  }
+
+  function updateThanaDropdown() {
+    const selectedDistrict = document.getElementById('search-district').value;
+    const thanas = [...new Set(
+      allDonors
+        .filter(d => !selectedDistrict || d.district === selectedDistrict)
+        .map(d => d.thana)
+        .filter(Boolean)
+    )].sort();
+    
+    const thanaSelect = document.getElementById('search-thana');
+    const currentThana = thanaSelect.value;
+    
+    thanaSelect.innerHTML = '<option value="">সব থানা</option>';
+    thanas.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      thanaSelect.appendChild(opt);
+    });
+    thanaSelect.value = currentThana;
+  }
+
+  // Search
+  function searchDonors() {
+    const blood = document.getElementById('search-blood').value.toLowerCase();
+    const district = document.getElementById('search-district').value.trim();
+    const thana = document.getElementById('search-thana').value.trim();
+
+    let results = allDonors.filter(d => {
+      let match = true;
+      if (blood) match = match && d.blood_group.toLowerCase() === blood;
+      if (district) match = match && d.district === district;
+      if (thana) match = match && d.thana === thana;
+      return match;
+    });
+
+    const container = document.getElementById('search-results');
+    if (results.length === 0) {
+      container.innerHTML = '<div class="bg-white rounded-xl shadow p-6 text-center text-gray-500">কোনো ডোনার পাওয়া যায়নি। অনুগ্রহ করে অন্য শর্তে খুঁজুন।</div>';
+      return;
+    }
+
+    container.innerHTML = results.map(d => `
+      <div class="bg-white rounded-xl shadow p-5 card-hover transition flex items-start gap-4">
+        <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+          <span class="text-red-600 font-bold text-lg">${d.blood_group}</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-bold text-gray-800 text-lg">${d.name}</h3>
+          <p class="text-gray-500 text-sm">${[d.thana, d.district, d.division].filter(Boolean).join(', ')}</p>
+          <p class="text-xs text-gray-400 mt-1">✅ সহায়তা দিয়েছে: ${d.helped_count || 0} জনকে</p>
+          <div class="mt-2 flex flex-wrap gap-2">
+            ${d.phone ? `<a href="tel:${d.phone}" class="inline-flex items-center gap-1 bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">📞 ${d.phone}</a>` : ''}
+            ${d.facebook ? `<a href="${d.facebook}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">📘 ফেসবুক</a>` : ''}
+            <button onclick="recordHelp('${d.__backendId}')" class="inline-flex items-center gap-1 bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium hover:bg-yellow-100 transition">💝 সহায়তা গ্রহণ করেছি</button>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  // ডিভাইস লোকেশন ব্যবহার করুন
+  const districtCoordinates = {
+    'ঢাকা': { lat: 23.8103, lng: 90.4125 },
+    'চট্টগ্রাম': { lat: 22.3569, lng: 91.7832 },
+    'খুলনা': { lat: 22.8456, lng: 89.5630 },
+    'রাজশাহী': { lat: 24.3745, lng: 88.6042 },
+    'বরিশাল': { lat: 22.7010, lng: 90.3535 },
+    'সিলেট': { lat: 24.8949, lng: 91.8687 },
+    'রংপুর': { lat: 25.7439, lng: 89.2752 },
+    'ময়মনসিংহ': { lat: 24.7471, lng: 90.4203 },
+    'ফরিদপুর': { lat: 23.6085, lng: 89.8479 },
+    'গাজীপুর': { lat: 23.9992, lng: 90.4158 }
+  };
+
+  function calculateDistance(lat1, lng1, lat2, lng2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLng/2) * Math.sin(dLng/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  }
+
+  function useDeviceLocation() {
+    const btn = document.getElementById('location-btn');
+    const statusEl = document.getElementById('location-status');
+    
+    btn.disabled = true;
+    btn.textContent = '⏳ লোকেশন খুঁজছি...';
+
+    if (!navigator.geolocation) {
+      statusEl.textContent = '❌ আপনার ডিভাইস লোকেশন সাপোর্ট করে না।';
+      statusEl.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = '📍 আমার এলাকা';
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition((position) => {
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+
+      let closestDistrict = null;
+      let minDistance = Infinity;
+
+      for (const [district, coords] of Object.entries(districtCoordinates)) {
+        const distance = calculateDistance(userLat, userLng, coords.lat, coords.lng);
+        if (distance < minDistance) {
+          minDistance = distance;
+          closestDistrict = district;
+        }
+      }
+
+      if (closestDistrict) {
+        document.getElementById('search-district').value = closestDistrict;
+        updateThanaDropdown();
+        
+        statusEl.textContent = `✅ আপনার এলাকা: ${closestDistrict}`;
+        statusEl.classList.remove('hidden');
+        setTimeout(() => {
+          statusEl.classList.add('hidden');
+          searchDonors();
+        }, 2000);
+      }
+
+      btn.disabled = false;
+      btn.textContent = '📍 আমার এলাকা';
+    }, (error) => {
+      statusEl.textContent = '❌ লোকেশন অ্যাক্সেস অনুমোদিত নয়। সেটিংসে অনুমোদন দিন।';
+      statusEl.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = '📍 আমার এলাকা';
+    });
+  }
+
+  // সহায়তা রেকর্ড করুন
+  async function recordHelp(donorId) {
+    const donor = allDonors.find(d => d.__backendId === donorId);
+    if (!donor) return;
+
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '📤 আপডেট হচ্ছে...';
+
+    const updatedDonor = {
+      ...donor,
+      helped_count: (donor.helped_count || 0) + 1
+    };
+
+    const result = await window.dataSdk.update(updatedDonor);
+    
+    if (result.isOk) {
+      btn.textContent = '✅ আপডেট হয়েছে!';
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.textContent = '💝 সহায়তা গ্রহণ করেছি';
+      }, 2000);
+    } else {
+      btn.disabled = false;
+      btn.textContent = '❌ ত্রুটি';
+      setTimeout(() => {
+        btn.textContent = '💝 সহায়তা গ্রহণ করেছি';
+      }, 2000);
+    }
+  }
+
+  // Registration
+  document.getElementById('reg-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (allDonors.length >= 999) {
+      showMsg('সর্বোচ্চ সীমা পূর্ণ হয়েছে!', 'red'); return;
+    }
+    const btn = document.getElementById('reg-btn');
+    btn.disabled = true; btn.textContent = 'অপেক্ষা করুন...';
+
+    const record = {
+      name: document.getElementById('reg-name').value,
+      blood_group: document.getElementById('reg-blood').value,
+      country: document.getElementById('reg-country').value,
+      division: document.getElementById('reg-division').value,
+      district: document.getElementById('reg-district').value,
+      thana: document.getElementById('reg-thana').value,
+      union_name: document.getElementById('reg-union').value,
+      phone: document.getElementById('reg-phone').value,
+      email: document.getElementById('reg-email').value,
+      facebook: document.getElementById('reg-facebook').value,
+      helped_count: 0
+    };
+
+    const result = await window.dataSdk.create(record);
+    btn.disabled = false; btn.textContent = 'রেজিস্ট্রেশন করুন';
+    if (result.isOk) {
+      showMsg('✅ সফলভাবে রেজিস্ট্রেশন হয়েছে!', 'green');
+      document.getElementById('reg-form').reset();
+      document.getElementById('reg-country').value = 'বাংলাদেশ';
+    } else {
+      showMsg('❌ কিছু সমস্যা হয়েছে, আবার চেষ্টা করুন।', 'red');
+    }
+  });
+
+  function showMsg(text, color) {
+    const el = document.getElementById('reg-msg');
+    el.textContent = text;
+    el.className = `text-center py-2 text-${color}-600 font-medium`;
+    el.classList.remove('hidden');
+    setTimeout(() => el.classList.add('hidden'), 3000);
+  }
+
+  // জেলা বদলালে থানা আপডেট হবে
+  document.getElementById('search-district').addEventListener('change', updateThanaDropdown);
+
+  // Data SDK
+  const dataHandler = {
+    onDataChanged(data) {
+      allDonors = data;
+      document.getElementById('donor-count').textContent = data.length;
+      const helped = data.reduce((sum, d) => sum + (d.helped_count || 0), 0);
+      document.getElementById('helped-count').textContent = helped;
+      updateLocationDropdowns();
+    }
+  };
+
+  // Element SDK
+  const defaultConfig = {
+    site_title: 'Blood Donor Search',
+    tagline: 'জীবন বাঁচান, রক্ত দিন',
+    background_color: '#f9fafb',
+    primary_color: '#dc2626',
+    text_color: '#1f2937',
+    surface_color: '#ffffff',
+    secondary_color: '#059669',
+    font_family: 'Hind Siliguri',
+    font_size: 16
+  };
+
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => {
+      document.getElementById('site-title').textContent = config.site_title || defaultConfig.site_title;
+      document.getElementById('tagline').textContent = config.tagline || defaultConfig.tagline;
+      const font = config.font_family || defaultConfig.font_family;
+      document.body.style.fontFamily = `${font}, sans-serif`;
+    },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.primary_color || defaultConfig.primary_color, set: (v) => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
+        { get: () => config.secondary_color || defaultConfig.secondary_color, set: (v) => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+      fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['site_title', config.site_title || defaultConfig.site_title],
+      ['tagline', config.tagline || defaultConfig.tagline]
+    ])
+  });
+
+  (async () => {
+    await window.dataSdk.init(dataHandler);
+  })();
+
+  lucide.createIcons();
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f753d0ca380814e',t:'MTc3ODA0MTcwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
