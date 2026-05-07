@@ -72,13 +72,13 @@
    <div id="panel-register" class="max-w-4xl mx-auto px-4 mt-6 pb-8 hidden">
     <div class="bg-white rounded-xl shadow p-6">
      <h2 class="text-xl font-bold text-gray-800 mb-4">ডোনার রেজিস্ট্রেশন</h2>
-    <form id="reg-form" action="https://script.google.com/macros/s/AKfycbzLqT5Ct6ueOc_kwxBsryoI_wwZ1N1u1LmdcOdhK4Q_FJSG52fMU2VWwrKRWp6XipII/exec" method="POST" class="space-y-4">
+     <form id="reg-form" class="space-y-4">
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
        <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-name">নাম *</label> <input id="reg-name" name="name" required type="text" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-name">নাম *</label> <input id="reg-name" required type="text" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
        </div>
        <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-blood">ব্লাড গ্রুপ *</label> <select id="reg-blood"name="blood" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none"> <option value="">নির্বাচন করুন</option> <option>A+</option><option>A-</option><option>B+</option><option>B-</option> <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option> </select>
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-blood">ব্লাড গ্রুপ *</label> <select id="reg-blood" required class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none"> <option value="">নির্বাচন করুন</option> <option>A+</option><option>A-</option><option>B+</option><option>B-</option> <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option> </select>
        </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -91,7 +91,7 @@
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
        <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-district">জেলা *</label> <input id="reg-district"name="location" required type="text" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-district">জেলা *</label> <input id="reg-district" required type="text" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
        </div>
        <div>
         <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-thana">থানা</label> <input id="reg-thana" type="text" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
@@ -102,7 +102,7 @@
       </div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
        <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-phone">ফোন *</label> <input id="reg-phone"name="phone" required type="tel" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
+        <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-phone">ফোন *</label> <input id="reg-phone" required type="tel" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
        </div>
        <div>
         <label class="block text-sm font-medium text-gray-700 mb-1" for="reg-email">ইমেইল</label> <input id="reg-email" type="email" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-500 outline-none">
@@ -369,72 +369,50 @@
     }
   };
 
-  document.getElementById('reg-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const btn = e.target.querySelector('button[type="submit"]');
-    const originalText = btn.innerText;
-    
-    btn.innerText = "অপেক্ষা করুন...";
-    btn.disabled = true;
+  // Element SDK
+  const defaultConfig = {
+    site_title: 'Blood Donor Search',
+    tagline: 'জীবন বাঁচান, রক্ত দিন',
+    background_color: '#f9fafb',
+    primary_color: '#dc2626',
+    text_color: '#1f2937',
+    surface_color: '#ffffff',
+    secondary_color: '#059669',
+    font_family: 'Hind Siliguri',
+    font_size: 16
+  };
 
-    fetch(this.action, {
-        method: 'POST',
-        body: new FormData(this)
-    })
-    .then(() => {
-        alert("ধন্যবাদ! আপনার রেজিস্ট্রেশন সফলভাবে সম্পন্ন হয়েছেে।");
-        this.reset();
-        btn.innerText = originalText;
-        btn.disabled = false;
-    })
-    .catch((err) => {
-        console.error(err);
-        alert("দুঃখিত, ডাটা পাঠাতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
-        btn.innerText = originalText;
-        btn.disabled = false;
-    });
-});
-// আপনার আগের কোড এখানে শেষ হয়েছে (লাইন ৩৯৬)
-}); 
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => {
+      document.getElementById('site-title').textContent = config.site_title || defaultConfig.site_title;
+      document.getElementById('tagline').textContent = config.tagline || defaultConfig.tagline;
+      const font = config.font_family || defaultConfig.font_family;
+      document.body.style.fontFamily = `${font}, sans-serif`;
+    },
+    mapToCapabilities: (config) => ({
+      recolorables: [
+        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
+        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
+        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
+        { get: () => config.primary_color || defaultConfig.primary_color, set: (v) => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
+        { get: () => config.secondary_color || defaultConfig.secondary_color, set: (v) => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } }
+      ],
+      borderables: [],
+      fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
+      fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
+    }),
+    mapToEditPanelValues: (config) => new Map([
+      ['site_title', config.site_title || defaultConfig.site_title],
+      ['tagline', config.tagline || defaultConfig.tagline]
+    ])
+  });
 
-// --- এখান থেকে নতুন কোড শুরু হবে ---
-const scriptURL = "https://script.google.com/macros/s/AKfycbzSlrk6BrIMlzXnARlwFEnjzpb3xrb-phTX3-ea2kTBWioEUoDxhVIQC1DEioniUI1o/exec";
+  (async () => {
+    await window.dataSdk.init(dataHandler);
+  })();
 
-function loadDonors() {
-    const resultsContainer = document.getElementById('search-results'); 
-    if(!resultsContainer) return;
-
-    fetch(scriptURL)
-    .then(response => response.json())
-    .then(donors => {
-        resultsContainer.innerHTML = ''; 
-        donors.forEach(donor => {
-            const card = `
-                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center mb-4">
-                    <div>
-                        <h3 class="font-bold text-gray-800">${donor.name}</h3>
-                        <p class="text-sm text-gray-500">${donor.location}</p>
-                        <p class="text-xs font-bold text-red-600 mt-1">রক্তের গ্রুপ: ${donor.blood}</p>
-                    </div>
-                    <a href="tel:${donor.phone}" class="bg-green-50 text-green-600 p-3 rounded-full hover:bg-green-100 transition">
-                        📞
-                    </a>
-                </div>
-            `;
-            resultsContainer.innerHTML += card;
-        });
-    })
-    .catch(error => console.error('Error fetching donors:', error));
-}
-
-// পেজ লোড হওয়ার সাথে সাথে ডাটা দেখাবে
-window.addEventListener('load', loadDonors);
-// --- নতুন কোড এখানে শেষ ---
-
-// আইকন দেখানোর জন্য এটি নিচে থাকবে (লাইন ৩৯৯)
-lucide.createIcons();
-// আইকন দেখানোর জন্য এটি নিচে রাখুন
-lucide.createIcons();
+  lucide.createIcons();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f753d0ca380814e',t:'MTc3ODA0MTcwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
