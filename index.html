@@ -369,50 +369,34 @@
     }
   };
 
-  // Element SDK
-  const defaultConfig = {
-    site_title: 'Blood Donor Search',
-    tagline: 'জীবন বাঁচান, রক্ত দিন',
-    background_color: '#f9fafb',
-    primary_color: '#dc2626',
-    text_color: '#1f2937',
-    surface_color: '#ffffff',
-    secondary_color: '#059669',
-    font_family: 'Hind Siliguri',
-    font_size: 16
-  };
+  document.getElementById('reg-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('button[type="submit"]');
+    const originalText = btn.innerText;
+    
+    btn.innerText = "অপেক্ষা করুন...";
+    btn.disabled = true;
 
-  window.elementSdk.init({
-    defaultConfig,
-    onConfigChange: async (config) => {
-      document.getElementById('site-title').textContent = config.site_title || defaultConfig.site_title;
-      document.getElementById('tagline').textContent = config.tagline || defaultConfig.tagline;
-      const font = config.font_family || defaultConfig.font_family;
-      document.body.style.fontFamily = `${font}, sans-serif`;
-    },
-    mapToCapabilities: (config) => ({
-      recolorables: [
-        { get: () => config.background_color || defaultConfig.background_color, set: (v) => { config.background_color = v; window.elementSdk.setConfig({ background_color: v }); } },
-        { get: () => config.surface_color || defaultConfig.surface_color, set: (v) => { config.surface_color = v; window.elementSdk.setConfig({ surface_color: v }); } },
-        { get: () => config.text_color || defaultConfig.text_color, set: (v) => { config.text_color = v; window.elementSdk.setConfig({ text_color: v }); } },
-        { get: () => config.primary_color || defaultConfig.primary_color, set: (v) => { config.primary_color = v; window.elementSdk.setConfig({ primary_color: v }); } },
-        { get: () => config.secondary_color || defaultConfig.secondary_color, set: (v) => { config.secondary_color = v; window.elementSdk.setConfig({ secondary_color: v }); } }
-      ],
-      borderables: [],
-      fontEditable: { get: () => config.font_family || defaultConfig.font_family, set: (v) => { config.font_family = v; window.elementSdk.setConfig({ font_family: v }); } },
-      fontSizeable: { get: () => config.font_size || defaultConfig.font_size, set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); } }
-    }),
-    mapToEditPanelValues: (config) => new Map([
-      ['site_title', config.site_title || defaultConfig.site_title],
-      ['tagline', config.tagline || defaultConfig.tagline]
-    ])
-  });
+    fetch(this.action, {
+        method: 'POST',
+        body: new FormData(this)
+    })
+    .then(() => {
+        alert("ধন্যবাদ! আপনার রেজিস্ট্রেশন সফলভাবে সম্পন্ন হয়েছেে।");
+        this.reset();
+        btn.innerText = originalText;
+        btn.disabled = false;
+    })
+    .catch((err) => {
+        console.error(err);
+        alert("দুঃখিত, ডাটা পাঠাতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+        btn.innerText = originalText;
+        btn.disabled = false;
+    });
+});
 
-  (async () => {
-    await window.dataSdk.init(dataHandler);
-  })();
-
-  lucide.createIcons();
+// আইকন দেখানোর জন্য এটি নিচে রাখুন
+lucide.createIcons();
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f753d0ca380814e',t:'MTc3ODA0MTcwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
