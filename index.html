@@ -394,7 +394,45 @@
         btn.disabled = false;
     });
 });
+// আপনার আগের কোড এখানে শেষ হয়েছে (লাইন ৩৯৬)
+}); 
 
+// --- এখান থেকে নতুন কোড শুরু হবে ---
+const scriptURL = "https://script.google.com/macros/s/AKfycbzSlrk6BrIMlzXnARlwFEnjzpb3xrb-phTX3-ea2kTBWioEUoDxhVIQC1DEioniUI1o/exec";
+
+function loadDonors() {
+    const resultsContainer = document.getElementById('search-results'); 
+    if(!resultsContainer) return;
+
+    fetch(scriptURL)
+    .then(response => response.json())
+    .then(donors => {
+        resultsContainer.innerHTML = ''; 
+        donors.forEach(donor => {
+            const card = `
+                <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-center mb-4">
+                    <div>
+                        <h3 class="font-bold text-gray-800">${donor.name}</h3>
+                        <p class="text-sm text-gray-500">${donor.location}</p>
+                        <p class="text-xs font-bold text-red-600 mt-1">রক্তের গ্রুপ: ${donor.blood}</p>
+                    </div>
+                    <a href="tel:${donor.phone}" class="bg-green-50 text-green-600 p-3 rounded-full hover:bg-green-100 transition">
+                        📞
+                    </a>
+                </div>
+            `;
+            resultsContainer.innerHTML += card;
+        });
+    })
+    .catch(error => console.error('Error fetching donors:', error));
+}
+
+// পেজ লোড হওয়ার সাথে সাথে ডাটা দেখাবে
+window.addEventListener('load', loadDonors);
+// --- নতুন কোড এখানে শেষ ---
+
+// আইকন দেখানোর জন্য এটি নিচে থাকবে (লাইন ৩৯৯)
+lucide.createIcons();
 // আইকন দেখানোর জন্য এটি নিচে রাখুন
 lucide.createIcons();
 </script>
