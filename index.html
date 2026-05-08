@@ -408,11 +408,63 @@
     ])
   });
 
-  (async () => {
-    await window.dataSdk.init(dataHandler);
-  })();
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  lucide.createIcons();
+  const firebaseConfig = {
+    apiKey: "AIzaSyDJYiRB29zVMIK3-PCLLFC7Olje1t3S0Z8",
+    authDomain: "blood-donor-app-a1a64.firebaseapp.com",
+    databaseURL: "https://blood-donor-app-a1a64-default-rtdb.firebaseio.com",
+    projectId: "blood-donor-app-a1a64",
+    storageBucket: "blood-donor-app-a1a64.firebasestorage.app",
+    messagingSenderId: "4625834490",
+    appId: "1:4625834490:web:70882f8df31f75571e8443",
+    measurementId: "G-GY851ZNLNW"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  const regForm = document.getElementById('reg-form');
+  if (regForm) {
+    regForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const formData = new FormData(regForm);
+      push(ref(db, 'donors'), {
+        name: formData.get('name'),
+        blood: formData.get('blood'),
+        phone: formData.get('phone'),
+        location: formData.get('location'),
+        timestamp: Date.now()
+      }).then(() => {
+        alert("সফলভাবে রেজিস্ট্রেশন হয়েছে!");
+        regForm.reset();
+      });
+    });
+  }
+
+  const resultsContainer = document.getElementById('search-results');
+  onValue(ref(db, 'donors'), (snapshot) => {
+    const data = snapshot.val();
+    if (resultsContainer) {
+      resultsContainer.innerHTML = ''; 
+      if (data) {
+        Object.values(data).reverse().forEach(donor => {
+          resultsContainer.innerHTML += `
+            <div class="bg-white p-4 rounded-xl shadow-sm border mb-4 flex justify-between items-center">
+              <div>
+                <h3 class="font-bold text-gray-800">${donor.name}</h3>
+                <p class="text-sm text-gray-500">${donor.location}</p>
+                <p class="text-xs font-bold text-red-600 mt-1">গ্রুপ: ${donor.blood}</p>
+              </div>
+              <a href="tel:${donor.phone}" class="bg-green-50 text-green-600 p-3 rounded-full">📞</a>
+            </div>`;
+        });
+      }
+    }
+  });
+</script>
 </script>
  <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f753d0ca380814e',t:'MTc3ODA0MTcwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
